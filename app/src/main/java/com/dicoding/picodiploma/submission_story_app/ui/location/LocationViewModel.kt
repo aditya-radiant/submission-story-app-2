@@ -5,5 +5,5 @@ import com.dicoding.picodiploma.submission_story_app.data.repository.StoryReposi
 
 class LocationViewModel(private val storyRepository: StoryRepository): ViewModel(){
 
-    fun getStoriesLocation(token: String) = storyRepository.getAllStoriesWithLocation()
+    fun getStoriesLocation(token: String) = storyRepository.getAllStoriesWithLocation(token)
 }

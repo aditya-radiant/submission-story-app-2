@@ -44,5 +44,7 @@
     <string name="camera_not_allowed">camera not allowed</string>
     <string name="title_activity_location">LocationActivity</string>
     <string name="location">location</string>
+    <string name="please_activate_gps">Please Activate Your GPS</string>
+    <string name="map_error">Map Error</string>
 
 </resources>
