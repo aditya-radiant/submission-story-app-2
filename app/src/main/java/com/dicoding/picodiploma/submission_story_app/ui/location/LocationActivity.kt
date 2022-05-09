@@ -46,6 +46,9 @@ class LocationActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityLocationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar?.title = getString(R.string.map)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         login = intent.getParcelableExtra(EXTRA_DATA)!!
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
@@ -76,6 +79,11 @@ class LocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
         getDeviceLocation()
 
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
     @SuppressLint("MissingPermission")

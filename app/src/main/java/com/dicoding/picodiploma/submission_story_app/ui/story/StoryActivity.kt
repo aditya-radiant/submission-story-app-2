@@ -136,6 +136,8 @@ class StoryActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_bar, menu)
+        var favButton = menu.findItem(R.id.map)
+        favButton.isVisible = true
         return super.onCreateOptionsMenu(menu)
     }
 

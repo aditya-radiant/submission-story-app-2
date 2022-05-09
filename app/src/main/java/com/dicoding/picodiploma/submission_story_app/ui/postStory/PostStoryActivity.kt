@@ -1,13 +1,16 @@
 package com.dicoding.picodiploma.submission_story_app.ui.postStory
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Location
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,6 +25,7 @@ import com.dicoding.picodiploma.submission_story_app.ui.Utils
 import com.dicoding.picodiploma.submission_story_app.ui.ViewModelFactory
 import com.dicoding.picodiploma.submission_story_app.ui.camera.CameraActivity
 import com.dicoding.picodiploma.submission_story_app.ui.story.StoryActivity
+import com.google.android.gms.location.FusedLocationProviderClient
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -33,6 +37,10 @@ class PostStoryActivity : AppCompatActivity() {
     private lateinit var login: LoginModel
     private var getFile: File? = null
     private var result: Bitmap? = null
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var location: Location? = null
+
     private val binding: ActivityPostStoryBinding by lazy {
         ActivityPostStoryBinding.inflate(layoutInflater)
     }
@@ -44,6 +52,7 @@ class PostStoryActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_DATA = "data"
         const val CAMERA_X_RESULT = 200
+        private const val TAG = "PostStoryActivity"
 
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
         private const val REQUEST_CODE_PERMISSIONS = 10
@@ -137,6 +146,45 @@ class PostStoryActivity : AppCompatActivity() {
             val myFile = Utils.uriToFile(selectedImg, this@PostStoryActivity)
             getFile = myFile
             binding.imgPost.setImageURI(selectedImg)
+        }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        Log.d(TAG, "$it")
+        if (it[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+            getLastLocation()
+        } else binding.switchLocation.isChecked = false
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getLastLocation() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    this.location = location
+                    Log.d(TAG, "getLastLocation: ${location.latitude}, ${location.longitude}")
+                } else {
+                    Toast.makeText(
+                        this,
+                        getString(R.string.please_activate_your_gps),
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    binding.switchLocation.isChecked = false
+                }
+            }
+        } else {
+            requestPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
         }
     }
 

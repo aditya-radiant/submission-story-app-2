@@ -46,5 +46,8 @@
     <string name="location">location</string>
     <string name="please_activate_gps">Please Activate Your GPS</string>
     <string name="map_error">Map Error</string>
+    <string name="map">User Map</string>
+    <string name="share_location">Share your location</string>
+    <string name="please_activate_your_gps">Please Activate Your GPS</string>
 
 </resources>
