@@ -47,7 +47,7 @@ class NameEditText: TextInputEditText , View.OnTouchListener {
 
             override fun afterTextChanged(text: Editable?) {
                 text?.let {
-                    if (text.isNotEmpty())
+                    if (text.isEmpty())
                         error = context.applicationContext.getString(R.string.fill_the_name)
                     if (text.toString().isNotEmpty()) showClearButton() else hideClearButton()
                 }

@@ -18,17 +18,19 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.dicoding.picodiploma.submission_story_app.data.helper.Result
 import com.dicoding.picodiploma.submission_story_app.R
 import com.dicoding.picodiploma.submission_story_app.databinding.ActivityPostStoryBinding
 import com.dicoding.picodiploma.submission_story_app.model.LoginModel
 import com.dicoding.picodiploma.submission_story_app.ui.Utils
 import com.dicoding.picodiploma.submission_story_app.ui.ViewModelFactory
 import com.dicoding.picodiploma.submission_story_app.ui.camera.CameraActivity
-import com.dicoding.picodiploma.submission_story_app.ui.story.StoryActivity
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
@@ -87,6 +89,7 @@ class PostStoryActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.post_story)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         login = intent.getParcelableExtra(EXTRA_DATA)!!
 
@@ -101,6 +104,13 @@ class PostStoryActivity : AppCompatActivity() {
         binding.camBtn.setOnClickListener { startCameraX() }
         binding.galleryBtn.setOnClickListener { startGallery() }
         binding.btnPost.setOnClickListener { uploadImage() }
+        binding.switchLocation.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                getLastLocation()
+            } else {
+                this.location = null
+            }
+        }
 
     }
 
@@ -189,6 +199,10 @@ class PostStoryActivity : AppCompatActivity() {
     }
 
     private fun uploadImage() {
+        if (binding.etCaption.text.toString().isBlank()) {
+            binding.etCaption.error = getString(R.string.fill_caption)
+        }
+
         if (getFile != null) {
             val file = Utils.reduceFileImage(getFile as File)
             val textPlainMediaType = "text/plain".toMediaType()
@@ -200,9 +214,51 @@ class PostStoryActivity : AppCompatActivity() {
                 file.name,
                 requestImageFile
             )
+            var lat: RequestBody? = null
+            var lon: RequestBody? = null
 
+            if (location != null) {
+                lat =
+                    location?.latitude.toString().toRequestBody("text/plain".toMediaType())
+                lon =
+                    location?.longitude.toString().toRequestBody("text/plain".toMediaType())
+            }
+
+            postViewModel.postStory(
+                login.token,
+                desReqBody,
+                imageMultipart,
+                lat,
+                lon).observe(this){
+                if (it != null) {
+                    when (it) {
+                        is Result.Loading -> {
+                            binding.progressBar.visibility = View.VISIBLE
+                        }
+                        is Result.Success -> {
+                            binding.progressBar.visibility = View.GONE
+                            Toast.makeText(
+                                this,
+                                getString(R.string.upload_succes),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            finish()
+                        }
+                        is Result.Error -> {
+                            binding.progressBar.visibility = View.GONE
+                            AlertDialog.Builder(this@PostStoryActivity).apply {
+                                setTitle(getString(R.string.information))
+                                setMessage(getString(R.string.failed) + ", ${it.error}")
+                                setPositiveButton(getString(R.string.continue_)) { _, _ ->
+                                    binding.progressBar.visibility = View.GONE
+                                }
+                                create()
+                                show()
+                        }
+                    }
+                }
+            }
         }
     }
-
-
+}
 }

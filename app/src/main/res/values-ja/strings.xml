@@ -45,4 +45,5 @@
     <string name="please_activate_gps">Please Activate Your GPS</string>
     <string name="map">User Map</string>
     <string name="share_location">Share your location</string>
+    <string name="fill_caption">Please Fill Your Caption</string>
 </resources>
